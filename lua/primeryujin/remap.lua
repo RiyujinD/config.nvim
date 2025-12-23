@@ -1,4 +1,4 @@
-vim.g.mapleader	= " "
+vim.g.mapleader = " "
 
 -- Back to Explorer tree
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
@@ -34,6 +34,15 @@ vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
+-- Fzf directories and look and start new tmux session
+vim.keymap.set("n", "<leader>0", "<cmd>!tmux neww tmux-sessionizer<CR>")
+-- Alt is the modifier.
+-- Still need make a cmd for -s 0 i.e:flask run and start session in correct dir
+vim.keymap.set("n", "<M-h>", "<cmd>silent !tmux neww tmux-sessionizer -s 0<CR>")
+vim.keymap.set("n", "<M-t>", "<cmd>silent !tmux neww tmux-sessionizer -s 1<CR>")
+vim.keymap.set("n", "<M-n>", "<cmd>silent !tmux neww tmux-sessionizer -s 2<CR>")
+vim.keymap.set("n", "<M-s>", "<cmd>silent !tmux neww tmux-sessionizer -s 3<CR>")
+
 -- Subtitute word
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
 
@@ -42,3 +51,17 @@ vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
 -- Reindent paragraphe keeping cursor in same place
 vim.keymap.set("n", "=ap", "ma=ap'a")
+
+-- Vertical split
+vim.keymap.set("n", "<leader>v", vim.cmd.vsplit)
+
+-- Horizontal split
+vim.keymap.set("n", "<leader>h", vim.cmd.split)
+
+-- Resizing split width
+vim.keymap.set("n", "<leader>+", ":vertical resize +5<CR>")
+vim.keymap.set("n", "<leader>-", ":vertical resize -5<CR>")
+
+-- Resizing split height
+vim.keymap.set("n", "<leader><Up>", ":resize +3<CR>")
+vim.keymap.set("n", "<leader><Down>", ":resize -3<CR>")
