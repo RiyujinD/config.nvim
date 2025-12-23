@@ -111,8 +111,10 @@ return {
 			local adapter_cmd = (vim.fn.executable(mason_debugpy) == 1) and mason_debugpy
 				or (vim.fn.exepath("python3") ~= "" and vim.fn.exepath("python3") or vim.fn.exepath("python"))
 
+			-- Setup nvim-dap-python (this configures the adapter automatically)
 			dap_python.setup(adapter_cmd)
 
+			-- Override adapter to ensure -Xfrozen_modules=off is used (important for Python 3.11+)
 			dap.adapters.python = {
 				type = "executable",
 				command = adapter_cmd,
@@ -121,11 +123,11 @@ return {
 
 			local root_path = find_root_path() or vim.fn.expand("%:p:h")
 
-			-- Flask app
+			-- Flask app configuration
 			table.insert(dap.configurations.python, 1, {
 				type = "python",
 				request = "launch",
-				name = "Launch Debugger on python FLask file",
+				name = "Launch Flask Application",
 				module = "flask",
 				args = { "run", "--host", "127.0.0.1", "--port", "5000", "--no-debugger", "--no-reload" },
 				cwd = root_path,
@@ -154,10 +156,16 @@ return {
 					end
 					return vim.fn.exepath("python") or "python"
 				end,
-				env = { FLASK_ENV = "development", FLASK_APP = "app.py", PYDEVD_DISABLE_FILE_VALIDATION = "1" },
+				env = {
+					FLASK_ENV = "development",
+					FLASK_APP = "app.py",
+					PYDEVD_DISABLE_FILE_VALIDATION = "1",
+				},
 				jinja = true,
+				justMyCode = false, -- Set to true if you only want to debug your code, not Flask internals
 				stopOnEntry = false,
-				subProcess = false,
+				subProcess = true, -- Important: allows debugging of Flask subprocesses
+				console = "integratedTerminal",
 			})
 
 			dap.configurations.c = dap.configurations.c or {}
@@ -270,6 +278,11 @@ return {
 		config = function()
 			local dap = require("dap")
 			local dapui = require("dapui")
+
+			-- First, setup dapui with default config to get default layouts
+			dapui.setup()
+
+			-- Create custom single-window layouts
 			local function layout(name)
 				return {
 					elements = {
@@ -280,35 +293,31 @@ return {
 					position = "right",
 				}
 			end
-			local name_to_layout = {
-				repl = { layout = layout("repl"), index = 0 },
-				stacks = { layout = layout("stacks"), index = 0 },
-				scopes = { layout = layout("scopes"), index = 0 },
-				console = { layout = layout("console"), index = 0 },
-				watches = { layout = layout("watches"), index = 0 },
-				breakpoints = { layout = layout("breakpoints"), index = 0 },
-			}
-			local layouts = {}
 
-			for name, config in pairs(name_to_layout) do
-				table.insert(layouts, config.layout)
-				name_to_layout[name].index = #layouts
-			end
+			local single_window_layouts = {
+				repl = layout("repl"),
+				stacks = layout("stacks"),
+				scopes = layout("scopes"),
+				console = layout("console"),
+				watches = layout("watches"),
+				breakpoints = layout("breakpoints"),
+			}
 
 			local function toggle_debug_ui(name)
 				dapui.close()
-				local layout_config = name_to_layout[name]
+				local single_layout = single_window_layouts[name]
 
-				if layout_config == nil then
+				if single_layout == nil then
 					error(string.format("bad name: %s", name))
 				end
 
 				local uis = vim.api.nvim_list_uis()[1]
 				if uis ~= nil then
-					layout_config.size = uis.width
+					single_layout.size = uis.width
 				end
 
-				pcall(dapui.toggle, layout_config.index)
+				-- Open with custom single-window layout
+				dapui.open({ layout = single_layout })
 			end
 
 			vim.keymap.set("n", "<leader>de", function()
@@ -335,7 +344,7 @@ return {
 
 			vim.keymap.set("n", "<leader>dt", function()
 				dapui.toggle()
-			end, { desc = "Toggle DAP UI" })
+			end, { desc = "Toggle DAP UI (default layout)" })
 
 			vim.api.nvim_create_autocmd("BufEnter", {
 				group = "DapGroup",
@@ -347,11 +356,6 @@ return {
 
 			vim.api.nvim_create_autocmd("BufWinEnter", create_nav_options("dap-repl"))
 			vim.api.nvim_create_autocmd("BufWinEnter", create_nav_options("DAP Watches"))
-
-			dapui.setup({
-				layouts = layouts,
-				enter = true,
-			})
 
 			dap.listeners.before.event_terminated["dapui_config"] = function()
 				dapui.close()
