@@ -1,9 +1,9 @@
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-        branch = "master",
+		branch = "master",
 		build = ":TSUpdate",
-        lazy = false,
+		lazy = false,
 		dependencies = {
 			"nvim-treesitter/nvim-treesitter-textobjects",
 		},
@@ -13,6 +13,7 @@ return {
 				"cpp",
 				"lua",
 				"vim",
+				"html",
 				"vimdoc",
 				"query",
 				"python",
@@ -29,17 +30,25 @@ return {
 				"markdown_inline",
 			},
 			auto_install = true,
-			sync_install = false,
 			indent = {
 				enable = true,
 			},
 			highlight = {
 				enable = true,
+				additional_vim_regex_highlighting = true,
 				-- Disable for performance large file (+100KB)
 				disable = function(lang, buf)
-					local max_filesize = 100 * 1024 -- 100 KB
-					local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-					if ok and stats and stats.size > max_filesize then
+					if not buf or buf == 0 then
+						return false
+					end
+
+					local name = vim.api.nvim_buf_get_name(buf)
+					if name == "" then
+						return false
+					end
+
+					local ok, stats = pcall(vim.loop.fs_stat, name)
+					if ok and stats and stats.size > 100 * 1024 then
 						vim.notify(
 							"File larger than 100KB treesitter disabled for performance",
 							vim.log.levels.WARN,
@@ -47,6 +56,8 @@ return {
 						)
 						return true
 					end
+
+					return false
 				end,
 			},
 			incremental_selection = {
@@ -83,6 +94,10 @@ return {
 		end,
 	},
 	{
+		"Glench/Vim-Jinja2-Syntax",
+		ft = { "htmldjango", "jinja", "jinja.html", "html" },
+	},
+	{
 		"nvim-treesitter/nvim-treesitter-context",
 		event = { "BufReadPost", "BufNewFile" },
 		dependencies = {
@@ -104,8 +119,8 @@ return {
 		config = function(_, opts)
 			require("treesitter-context").setup(opts)
 
-            vim.cmd("highlight! link TreesitterContext ColorColumn")
-            vim.cmd("highlight! link TreesitterContextLineNumber ColorColumn")
+			vim.cmd("highlight! link TreesitterContext ColorColumn")
+			vim.cmd("highlight! link TreesitterContextLineNumber ColorColumn")
 
 			vim.keymap.set("n", "<leader>tc", function()
 				require("treesitter-context").toggle()
@@ -119,4 +134,3 @@ return {
 		opts = {},
 	},
 }
-
