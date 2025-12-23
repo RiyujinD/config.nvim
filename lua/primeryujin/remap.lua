@@ -35,7 +35,7 @@ vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 -- Fzf directories and look and start new tmux session
-vim.keymap.set("n", "<leader>0", "<cmd>!tmux neww tmux-sessionizer<CR>")
+vim.keymap.set("n", "<C-f>", "<cmd>!tmux neww tmux-sessionizer<CR>")
 -- Alt is the modifier.
 -- Still need make a cmd for -s 0 i.e:flask run and start session in correct dir
 vim.keymap.set("n", "<M-h>", "<cmd>silent !tmux neww tmux-sessionizer -s 0<CR>")
@@ -59,7 +59,7 @@ vim.keymap.set("n", "<leader>v", vim.cmd.vsplit)
 vim.keymap.set("n", "<leader>h", vim.cmd.split)
 
 -- Resizing split width
-vim.keymap.set("n", "<leader>+", ":vertical resize +5<CR>")
+vim.keymap.set("n", "<leader>=", ":vertical resize +5<CR>")
 vim.keymap.set("n", "<leader>-", ":vertical resize -5<CR>")
 
 -- Resizing split height
