@@ -20,7 +20,7 @@ return {
 				yaml = { "prettier" },
 				markdown = { "prettier" },
 				rust = { "rustfmt" },
-				sql = { "sqlfluff" },
+				sql = { "sqruff" },
 				htmldjango = { "djlint" },
 				jinja = { "djlint" },
 				sh = { "shfmt" },
